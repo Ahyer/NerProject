@@ -1,21 +1,18 @@
 import torch
 import torch.nn as nn
-from transformers import BertModel, AdamW, BertTokenizer
+from transformers import BertModel
 from torchcrf import CRF
 import torch.optim as optim
-import logging
 import time
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 import numpy as np
 from NerDataSet import NerDataSet as nds, my_collate
-
-logger = logging.getLogger('training log')
-logger.setLevel(logging.INFO)
 
 
 class Model(nn.Module):
     def __init__(self, tag_num):
         super(Model, self).__init__()
+        # 是否需要冻结Bert的参数？我这里没有冻结
         self.bert = BertModel.from_pretrained('bert-base-chinese')
         config = self.bert.config
         self.lstm = nn.LSTM(bidirectional=True, num_layers=2, input_size=config.hidden_size,
@@ -28,9 +25,8 @@ class Model(nn.Module):
             bert_output = \
                 self.bert(input_ids=x['input_ids'], attention_mask=x['attention_mask'],
                           token_type_ids=x['token_type_ids'])[0]
-        lstm_output, _ = self.lstm(bert_output)  # (1,30,768)
-        fc_output = self.fc(lstm_output)  # (1,30,7)
-        # fc_output -> (seq_length, batch_size, n tags) y -> (seq_length, batch_size)
+        lstm_output, _ = self.lstm(bert_output)
+        fc_output = self.fc(lstm_output)
         loss = None
         if y != None:
             loss = self.crf(fc_output, y)
@@ -52,8 +48,7 @@ def train_loop(dataloader, model, optimizer, scheduler, e):
         epoch_end_loss = loss
         if i % 10 == 0:
             print(f'>>> epoch {e + 1} <<< step {i} : loss : {loss}')
-    print(
-        f'{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())} epoch {e + 1} training loss : {epoch_end_loss}')
+    print(f'{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())} epoch {e + 1} training loss : {epoch_end_loss}')
 
 
 def test_loop(dataloader, model, e):
