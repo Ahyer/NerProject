@@ -5,12 +5,17 @@ import os
 from torch.utils.data import Dataset
 from transformers import BertTokenizer
 
+from config import Config
+
+model_path = os.path.join(os.getcwd(), 'bert-base-chinese')
+
 
 class NerDataSet(Dataset):
     def __init__(self, mode="train"):
         self.max_length = 50
         self.tt = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC", "X", "[CLS]", "[SEP]"]
-        self.src, self.tag, = self.get_file(os.getcwd() + "\data\\" + mode + ".txt")
+        self.data_path = os.path.join(os.getcwd(), "data", f"{mode}.txt")
+        self.src, self.tag, = self.get_file(self.data_path)
 
     def __len__(self):
         return len(self.src)
@@ -19,7 +24,7 @@ class NerDataSet(Dataset):
         return self.src[idx], self.tag[idx]
 
     def get_file(self, path):
-        tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
+        tokenizer = BertTokenizer.from_pretrained(Config().pretrain_model_path)
         list_src = []
         list_tag = []
         _src = []
@@ -30,7 +35,7 @@ class NerDataSet(Dataset):
                 line = line.strip("\n")
                 if (len(line) == 0):
                     __ = tokenizer.encode_plus(_src, return_token_type_ids=True, return_attention_mask=True,
-                                               return_tensors='pt',truncation=True,
+                                               return_tensors='pt', truncation=True,
                                                padding='max_length', max_length=self.max_length).to('cuda')
                     list_src.append(__)
                     dict = {word: index for index, word in enumerate(self.tt)}

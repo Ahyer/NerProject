@@ -4,16 +4,19 @@ from transformers import BertModel
 from torchcrf import CRF
 import torch.optim as optim
 import time
+import os
 from torch.utils.data import DataLoader
 import numpy as np
 from NerDataSet import NerDataSet as nds, my_collate
+from config import Config
 
 
 class Model(nn.Module):
     def __init__(self, tag_num):
         super(Model, self).__init__()
         # 是否需要冻结Bert的参数？我这里没有冻结
-        self.bert = BertModel.from_pretrained('bert-base-chinese')
+        self.config = Config()
+        self.bert = BertModel.from_pretrained(Config().pretrain_model_path)
         config = self.bert.config
         self.lstm = nn.LSTM(bidirectional=True, num_layers=2, input_size=config.hidden_size,
                             hidden_size=config.hidden_size // 2, batch_first=True)
@@ -83,10 +86,10 @@ def test_loop(dataloader, model, e):
 if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print('Using {} device'.format(device))
-    epoches = 100
+    epoches = 10
     max_length = 50
     lr = 0.0001
-    batch_size = 128
+    batch_size = 256
     model = Model(tag_num=10).to(device)
     train_loader = DataLoader(dataset=nds("train"), batch_size=batch_size, shuffle=True, collate_fn=my_collate)
     dev_loader = DataLoader(dataset=nds('dev'), batch_size=batch_size, shuffle=True, collate_fn=my_collate)

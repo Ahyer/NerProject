@@ -3,6 +3,8 @@ from transformers import BertTokenizer
 from Model import Model
 import torch
 
+from config import Config
+
 
 def predict(str_input, tokenizer):
     str_list = list(str_input)
@@ -22,9 +24,9 @@ def predict(str_input, tokenizer):
 if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = Model(tag_num=10).to(device)
-    tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
+    tokenizer = BertTokenizer.from_pretrained(Config().pretrain_model_path)
     # 模型位置
-    model.load_state_dict(torch.load('D:\Code\\NerProject\model_p_0.9898964624676445.pt'))
+    model.load_state_dict(torch.load('/home/ahyer/code/NerProject/model_p_0.9860051768766179.pt'))
     model.eval()
     while True:
         str_input = input("请输入")
