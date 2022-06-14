@@ -10,7 +10,7 @@ def predict(str_input, tokenizer):
     str_list = list(str_input)
     input = tokenizer.encode_plus(str_list, return_token_type_ids=True, return_attention_mask=True,
                                   return_tensors='pt', truncation=True,
-                                  padding='max_length', max_length=50).to('cuda')
+                                  padding='max_length', max_length=Config().max_length).to('cuda')
     input_ids = input.input_ids.cpu().squeeze().detach().numpy().tolist()
     attention_mask = input.attention_mask.cpu().squeeze().detach().numpy().tolist()
     token_type_ids = input.token_type_ids.cpu().squeeze().detach().numpy().tolist()
@@ -23,10 +23,10 @@ def predict(str_input, tokenizer):
 
 if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = Model(tag_num=10).to(device)
+    model = Model(len(Config().tt)).to(device)
     tokenizer = BertTokenizer.from_pretrained(Config().pretrain_model_path)
     # 模型位置
-    model.load_state_dict(torch.load('/home/ahyer/code/NerProject/model_p_0.9860051768766179.pt'))
+    model.load_state_dict(torch.load('/home/ahyer/code/NerProject/model_p_0.9141975308641976.pt'))
     model.eval()
     while True:
         str_input = input("请输入")

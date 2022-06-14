@@ -4,7 +4,6 @@ from transformers import BertModel
 from torchcrf import CRF
 import torch.optim as optim
 import time
-import os
 from torch.utils.data import DataLoader
 import numpy as np
 from NerDataSet import NerDataSet as nds, my_collate
@@ -80,17 +79,17 @@ def test_loop(dataloader, model, e):
     print(
         f'{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())} epoch {e + 1} evaluation accuracy : {epoch_end_accuracy}')
     # save model
-    torch.save(model.state_dict(), f'model_p_{epoch_end_accuracy}.pt')
+    #torch.save(model.state_dict(), f'model_p_{epoch_end_accuracy}.pt')
 
 
 if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print('Using {} device'.format(device))
-    epoches = 10
-    max_length = 50
+    epoches = 100
+    max_length = Config().max_length
     lr = 0.0001
-    batch_size = 256
-    model = Model(tag_num=10).to(device)
+    batch_size = 128
+    model = Model(tag_num=len(Config().tt)).to(device)
     train_loader = DataLoader(dataset=nds("train"), batch_size=batch_size, shuffle=True, collate_fn=my_collate)
     dev_loader = DataLoader(dataset=nds('dev'), batch_size=batch_size, shuffle=True, collate_fn=my_collate)
     test_loader = DataLoader(dataset=nds('test'), batch_size=batch_size, shuffle=True, collate_fn=my_collate)

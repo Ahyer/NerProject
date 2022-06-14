@@ -12,9 +12,12 @@ model_path = os.path.join(os.getcwd(), 'bert-base-chinese')
 
 class NerDataSet(Dataset):
     def __init__(self, mode="train"):
-        self.max_length = 50
-        self.tt = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC", "X", "[CLS]", "[SEP]"]
-        self.data_path = os.path.join(os.getcwd(), "data", f"{mode}.txt")
+        self.max_length = Config().max_length
+        # self.tt = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC", "X", "[CLS]", "[SEP]"]
+        self.tt = ["O", "B-ENTI", "I-ENTI", "B-ORG", "I-ORG", "B-ADD", "I-ADD", "B-CON", "I-CON", "B-LAW", "I-LAW",
+                   "B-PHONE", "I-PHONE", "B-ID", "I-ID", "B-BANK", "I-BANK", "B-EMAIL", "I-EMAIL", "X", "[CLS]",
+                   "[SEP]"]
+        self.data_path = os.path.join(os.getcwd(), "contract_data", f"{mode}.txt")
         self.src, self.tag, = self.get_file(self.data_path)
 
     def __len__(self):
@@ -31,14 +34,13 @@ class NerDataSet(Dataset):
         _tag = []
         with open(path, mode='r', encoding='utf-8') as f:
             for line in f:
-
                 line = line.strip("\n")
                 if (len(line) == 0):
                     __ = tokenizer.encode_plus(_src, return_token_type_ids=True, return_attention_mask=True,
                                                return_tensors='pt', truncation=True,
                                                padding='max_length', max_length=self.max_length).to('cuda')
                     list_src.append(__)
-                    dict = {word: index for index, word in enumerate(self.tt)}
+                    dict = {word: index for index, word in enumerate(Config().tt)}
                     list_tag.append([dict[k] for k in _tag])
                     if (len(list_tag[-1]) < self.max_length):
                         list_tag[-1].extend([0 for i in range(self.max_length - len(list_tag[-1]))])
