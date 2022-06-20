@@ -19,7 +19,7 @@ class Model(nn.Module):
     def __init__(self, tag_num, max_length):
         super().__init__()
         self.bert = BertModel.from_pretrained('bert-base-chinese')
-        config = self.bert.config
+        config = self.bert.my_config
         self.lstm = nn.LSTM(bidirectional=True, num_layers=2, input_size=config.hidden_size,
                             hidden_size=config.hidden_size // 2, batch_first=True)
         self.crf = CRF(tag_num)

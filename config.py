@@ -7,4 +7,6 @@ class Config:
         self.tt = ["O", "B-ENTI", "I-ENTI", "B-ORG", "I-ORG", "B-ADD", "I-ADD", "B-CON", "I-CON", "B-LAW", "I-LAW",
                    "B-PHONE", "I-PHONE", "B-ID", "I-ID", "B-BANK", "I-BANK", "B-EMAIL", "I-EMAIL", "X", "[CLS]",
                    "[SEP]"]
+        # self.tt = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC", "X", "[CLS]", "[SEP]"]
         self.max_length = 50
+        self.max_accuracy = 0.001

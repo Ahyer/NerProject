@@ -14,7 +14,7 @@ class Model(nn.Module):
     def __init__(self, tag_num):
         super(Model, self).__init__()
         # 是否需要冻结Bert的参数？我这里没有冻结
-        self.config = Config()
+        self.my_config = Config()
         self.bert = BertModel.from_pretrained(Config().pretrain_model_path)
         config = self.bert.config
         self.lstm = nn.LSTM(bidirectional=True, num_layers=2, input_size=config.hidden_size,
@@ -53,7 +53,7 @@ def train_loop(dataloader, model, optimizer, scheduler, e):
     print(f'{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())} epoch {e + 1} training loss : {epoch_end_loss}')
 
 
-def test_loop(dataloader, model, e):
+def test_loop(dataloader, model, e, config):
     model.eval()
     print(f'{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())} epoch {e + 1} Start Evaluation!')
     step_end_accuracy = []
@@ -78,18 +78,23 @@ def test_loop(dataloader, model, e):
     epoch_end_accuracy = np.mean(step_end_accuracy)
     print(
         f'{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())} epoch {e + 1} evaluation accuracy : {epoch_end_accuracy}')
+    if epoch_end_accuracy > config.max_accuracy:
+        config.max_accuracy = epoch_end_accuracy
+        # torch.save(model.state_dict(), f'model_p_{epoch_end_accuracy}.pt')
+        torch.save(model.state_dict(), 'model.pt')
+
     # save model
-    #torch.save(model.state_dict(), f'model_p_{epoch_end_accuracy}.pt')
 
 
 if __name__ == '__main__':
+    config = Config()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print('Using {} device'.format(device))
-    epoches = 100
-    max_length = Config().max_length
+    epoches = 150
+    max_length = config.max_length
     lr = 0.0001
     batch_size = 128
-    model = Model(tag_num=len(Config().tt)).to(device)
+    model = Model(tag_num=len(config.tt)).to(device)
     train_loader = DataLoader(dataset=nds("train"), batch_size=batch_size, shuffle=True, collate_fn=my_collate)
     dev_loader = DataLoader(dataset=nds('dev'), batch_size=batch_size, shuffle=True, collate_fn=my_collate)
     test_loader = DataLoader(dataset=nds('test'), batch_size=batch_size, shuffle=True, collate_fn=my_collate)
@@ -99,4 +104,4 @@ if __name__ == '__main__':
     for e in range(epoches):
         print(f"Epoch {e + 1}\n-------------------------------")
         train_loop(train_loader, model=model, optimizer=optimizer, scheduler=scheduler, e=e)
-        test_loop(dev_loader, model=model, e=e)
+        test_loop(dev_loader, model=model, e=e, config=config)

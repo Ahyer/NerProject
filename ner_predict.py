@@ -19,6 +19,7 @@ def predict(str_input, tokenizer):
             'token_type_ids': torch.tensor(token_type_ids).unsqueeze(dim=0).to(device)}
     _, tag = model(dict, None)
     print(tag)
+    return tag
 
 
 if __name__ == '__main__':
@@ -26,8 +27,11 @@ if __name__ == '__main__':
     model = Model(len(Config().tt)).to(device)
     tokenizer = BertTokenizer.from_pretrained(Config().pretrain_model_path)
     # 模型位置
-    model.load_state_dict(torch.load('/home/ahyer/code/NerProject/model_ch.pt'))
+    model.load_state_dict(torch.load('/home/ahyer/code/NerProject/model.pt'))
     model.eval()
     while True:
         str_input = input("请输入")
-        predict(str_input, tokenizer=tokenizer)
+        predict_out = predict(str_input, tokenizer=tokenizer)
+        for i in predict_out:
+            if i % 2 == 1:
+                print(0)
